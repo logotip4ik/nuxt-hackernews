@@ -1,6 +1,8 @@
 <template>
   <nav :class="{ nav: true, 'nav--dark': darkMode }">
-    <h1 class="nav__heading" @click="$router.push('/')">HackerNews Clone</h1>
+    <h1 class="nav__heading" @click="$router.push('/newstories/1')">
+      HackerNews Clone
+    </h1>
 
     <div class="nav__links">
       <NuxtLink
@@ -22,8 +24,8 @@ import { mapState } from 'vuex'
 export default {
   data: () => ({
     links: [
-      { id: Math.random() * 100, link: '/beststories/', name: 'Beststories' },
-      { id: Math.random() * 100, link: '/topstories/', name: 'Topstories' },
+      { id: Math.random() * 100, link: '/beststories/1', name: 'Beststories' },
+      { id: Math.random() * 100, link: '/topstories/1', name: 'Topstories' },
     ],
   }),
   computed: {

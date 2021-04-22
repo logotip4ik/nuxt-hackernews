@@ -64,16 +64,18 @@ export const actions = {
     } else return posts
   },
   async nuxtServerInit({ state, dispatch }, { params, error }) {
-    const whitelist = [undefined, 'topstories', 'beststories']
-    const idx = whitelist.indexOf(params.stories)
-    if (idx === -1) {
+    state.currPage = isNaN(params.page) ? 1 : Number.parseInt(params.page)
+
+    const whitelist = [undefined, 'newstories', 'topstories', 'beststories']
+    const idxStories = whitelist.indexOf(params.stories)
+    if (idxStories === -1) {
       error(404)
       return
     }
 
     let stories = 'new'
-    if (idx === 1) stories = 'top'
-    if (idx === 2) stories = 'best'
+    if (idxStories === 2) stories = 'top'
+    if (idxStories === 3) stories = 'best'
 
     await dispatch('fetchPostsIds', { stories })
 

@@ -1,0 +1,178 @@
+<template>
+  <div :class="{ main: true, 'main--dark': darkMode }">
+    <Navbar />
+    <div class="main__container">
+      <Item v-for="post in pagePosts" :key="post.id" :post="post">
+        {{ post.title }}
+        <template #by>By: {{ post.by }}</template>
+      </Item>
+    </div>
+    <div :class="{ main__pages: true, 'main__pages--dark': darkMode }">
+      <button @click="$router.push(`/${stories}stories/${currPage - 1}`)">
+        &minus;
+      </button>
+      <span>{{ currPage }}</span>
+      <button @click="$router.push(`/${stories}stories/${currPage + 1}`)">
+        &plus;
+      </button>
+    </div>
+    <button
+      :class="{
+        main__toggle: true,
+        'main__toggle--dark': darkMode,
+      }"
+      @click="toggleDarkMode"
+    >
+      {{ darkMode ? 'light' : 'dark' }}
+    </button>
+  </div>
+</template>
+
+<script>
+import { mapState, mapMutations, mapActions } from 'vuex'
+
+export default {
+  asyncData({ params, error, store }) {
+    const currPage = isNaN(params.page) ? 1 : Number.parseInt(params.page)
+    const whitelist = [undefined, 'newstories', 'topstories', 'beststories']
+    const idxStories = whitelist.indexOf(params.stories)
+    if (idxStories === -1) {
+      error(404)
+      return
+    }
+
+    let stories = 'new'
+    if (idxStories === 2) stories = 'top'
+    if (idxStories === 3) stories = 'best'
+
+    return { stories, currPage, posts: store.getters[`${stories}Stories`] }
+  },
+  computed: {
+    ...mapState({
+      darkMode: 'darkMode',
+    }),
+    pagePosts() {
+      const from = (this.currPage - 1) * 10
+      const to = this.currPage * 10
+      return this.posts?.slice(from, to)
+    },
+  },
+  watch: {
+    darkMode(val) {
+      localStorage.setItem('__darkMode', JSON.stringify(val))
+    },
+    async '$route.params'(params, oldParams) {
+      const { page, stories } = params
+      const { page: oldPage, stories: oldStories } = oldParams
+
+      try {
+        if (Number(page) - Number(oldPage) < 0) return
+        await this.fetch({
+          stories: stories.slice(0, -7),
+          currPage: Number(page),
+        })
+        if (stories === oldStories) return
+        await this.fetchPostsIds({ stories: stories.slice(0, -7) })
+      } catch (error) {
+        // console.error(error)
+      }
+    },
+  },
+  mounted() {
+    this.checkDarkMode()
+  },
+  methods: {
+    ...mapMutations(['checkDarkMode', 'toggleDarkMode']),
+    ...mapActions(['fetchPosts', 'fetchPostsIds']),
+    fetch({ stories, currPage }) {
+      const from = 10 * (currPage - 1)
+      const to = 10 * currPage
+      this.fetchPosts({
+        from,
+        to,
+        postsIds: `${stories}StoriesIds`,
+        stories: `${stories}Stories`,
+      })
+    },
+  },
+}
+</script>
+
+<style lang="scss">
+.main {
+  padding-bottom: 2rem;
+  color: rgb(73, 73, 73);
+  transition: background-color 200ms ease-out, color 200ms ease-out;
+
+  &--dark {
+    background-color: rgb(31, 33, 41);
+    color: #aaa;
+  }
+
+  &__container {
+    max-width: 90vw;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    padding: 0.25rem;
+    margin: 0 auto;
+  }
+  &__pages {
+    margin-top: 1rem;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    button {
+      $button-size: 35px;
+      appearance: none;
+      border-radius: 100%;
+      height: $button-size;
+      color: rgb(73, 73, 73);
+      width: $button-size;
+      border: 1px solid #ddd;
+      box-shadow: 0 0 10px 0 rgba($color: #000000, $alpha: 0.1);
+      background-color: transparent;
+      font-size: 1.5rem;
+      transition: background-color 200ms ease-out;
+      &:hover {
+        background-color: darken($color: #ffffff, $amount: 10);
+      }
+    }
+    span {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin: 0 1rem;
+    }
+
+    &--dark button {
+      color: #aaa;
+      border-color: #333;
+      box-shadow: 0 0 10px 0 rgba($color: #000000, $alpha: 0.25);
+
+      &:hover {
+        background-color: lighten($color: #1f2129, $amount: 10);
+      }
+    }
+  }
+  &__toggle {
+    position: fixed;
+    bottom: 4rem;
+    right: 5rem;
+  }
+}
+
+.news-enter-active,
+.news-leave-active {
+  transition: opacity 0ms ease-out;
+}
+
+.news-enter-from,
+.news-leave-to {
+  // transform: translateX(-100%);
+  opacity: 0;
+  display: none;
+}
+</style>

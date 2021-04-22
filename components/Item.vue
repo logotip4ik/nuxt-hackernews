@@ -1,11 +1,12 @@
 <template>
   <div :class="{ item: true, 'item--dark': darkMode }">
-    <h3
+    <a
       :class="{ item__heading: true, 'item__heading--dark': darkMode }"
-      @click="openURL(post.url)"
+      :href="`${post.url}`"
+      target="_blank"
     >
       <slot></slot>
-    </h3>
+    </a>
     <small><slot name="by"></slot></small>
   </div>
 </template>
@@ -23,11 +24,6 @@ export default {
   },
   computed: {
     ...mapState(['darkMode']),
-  },
-  methods: {
-    openURL(url) {
-      window.open(url)
-    },
   },
 }
 </script>
@@ -54,6 +50,10 @@ export default {
   &__heading {
     cursor: pointer;
     transition: color 200ms ease-out;
+    font-size: 1.4rem;
+    font-weight: 600;
+    text-decoration: none;
+    color: currentColor;
 
     &:hover {
       color: black;
