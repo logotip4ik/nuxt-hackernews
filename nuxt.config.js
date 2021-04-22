@@ -1,7 +1,10 @@
 export default {
   // Target: https://go.nuxtjs.dev/config-target
   target: 'static',
-
+  loading: {
+    color: 'white',
+    height: '5px',
+  },
   // Global page headers: https://go.nuxtjs.dev/config-head
   head: {
     title: 'hackernews-clone',
