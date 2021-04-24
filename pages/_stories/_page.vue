@@ -8,11 +8,14 @@
       </Item>
     </div>
     <div :class="{ main__pages: true, 'main__pages--dark': darkMode }">
-      <button @click="$router.push(`/${stories}stories/${currPage - 1}`)">
-        &minus;
-      </button>
+      <button @click="redirect(-1)">&minus;</button>
       <span>{{ currPage }}</span>
-      <button @click="$router.push(`/${stories}stories/${currPage + 1}`)">
+      <button
+        @click="
+          redirect(1)
+          fetch(currPage + 1)
+        "
+      >
         &plus;
       </button>
     </div>
@@ -61,21 +64,12 @@ export default {
     darkMode(val) {
       localStorage.setItem('__darkMode', JSON.stringify(val))
     },
-    async '$route.params'(params, oldParams) {
-      const { page, stories } = params
-      const { page: oldPage, stories: oldStories } = oldParams
-
-      try {
-        if (Number(page) - Number(oldPage) < 0) return
-        await this.fetch({
-          stories: stories.slice(0, -7),
-          currPage: Number(page),
-        })
-        if (stories === oldStories) return
-        await this.fetchPostsIds({ stories: stories.slice(0, -7) })
-      } catch (error) {
-        // console.error(error)
-      }
+    async '$route.params.stories'(stories, oldStories = 'newstories') {
+      const formatedStroies = stories.slice(0, -7)
+      const formatedOldStroies = oldStories.slice(0, -7)
+      if (formatedStroies === formatedOldStroies) return
+      await this.fetchPostsIds({ stories: formatedStroies })
+      await this.fetch(1, formatedStroies)
     },
   },
   mounted() {
@@ -84,7 +78,7 @@ export default {
   methods: {
     ...mapMutations(['checkDarkMode', 'toggleDarkMode']),
     ...mapActions(['fetchPosts', 'fetchPostsIds']),
-    fetch({ stories, currPage }) {
+    fetch(currPage = this.currPage, stories = this.stories) {
       const from = 10 * (currPage - 1)
       const to = 10 * currPage
       this.fetchPosts({
@@ -93,6 +87,10 @@ export default {
         postsIds: `${stories}StoriesIds`,
         stories: `${stories}Stories`,
       })
+    },
+    redirect(num) {
+      if (this.currPage + num <= 0) return
+      this.$router.push(`/${this.stories}stories/${this.currPage + num}`)
     },
   },
 }
@@ -161,6 +159,29 @@ export default {
     position: fixed;
     bottom: 4rem;
     right: 5rem;
+    border: none;
+    border-radius: 50%;
+    width: 2.5rem;
+    height: 2.5rem;
+    box-shadow: 0 0 10px 0 rgba($color: #000000, $alpha: 0.25);
+    background-color: whitesmoke;
+    cursor: pointer;
+    transition: background-color 200ms ease-out, color 200ms ease-out;
+
+    &:hover {
+      background-color: darken($color: #ffffff, $amount: 10);
+    }
+
+    &--dark {
+      color: #aaa;
+      border-color: #333;
+      background-color: #1f2129;
+
+      &:hover {
+        color: white;
+        background-color: lighten($color: #1f2129, $amount: 10);
+      }
+    }
   }
 }
 

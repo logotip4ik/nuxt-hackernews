@@ -42,7 +42,8 @@ export const mutations = {
 }
 
 export const actions = {
-  async fetchPostsIds({ commit }, { stories, cb }) {
+  async fetchPostsIds({ state, commit }, { stories, cb }) {
+    if (state[`${stories}StoriesIds`][0]) return
     const post = await axios.get(
       `https://hacker-news.firebaseio.com/v0/${stories}stories.json?print=pretty`
     )
@@ -51,6 +52,7 @@ export const actions = {
   },
   async fetchPosts({ state, commit }, { from, to, postsIds, stories }) {
     if (state[stories] && state[stories][from + 1]) return
+    // console.log('fetching new posts', { from, to, postsIds, stories })
     const posts = []
     const pages = state[postsIds].slice(0, to).length
     for (let i = from; i < pages; i += 1) {
@@ -80,8 +82,8 @@ export const actions = {
     await dispatch('fetchPostsIds', { stories })
 
     const storiesIds = `${stories}StoriesIds`
-    const from = state.currPage * 10
-    const to = (state.currPage + 1) * 10
+    const from = (state.currPage - 1) * 10
+    const to = state.currPage * 10
     const posts = await dispatch('fetchPosts', {
       from,
       to,
