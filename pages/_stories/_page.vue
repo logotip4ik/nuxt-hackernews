@@ -1,7 +1,8 @@
 <template>
   <div :class="{ main: true, 'main--dark': darkMode }">
     <Navbar />
-    <div class="main__container">
+    {{ loading }}
+    <div ref="posts" class="main__container">
       <Item v-for="post in pagePosts" :key="post.id" :post="post">
         {{ post.title }}
         <template #by>By: {{ post.by }}</template>
@@ -10,14 +11,7 @@
     <div :class="{ main__pages: true, 'main__pages--dark': darkMode }">
       <button @click="redirect(-1)">&minus;</button>
       <span>{{ currPage }}</span>
-      <button
-        @click="
-          redirect(1)
-          fetch(currPage + 1)
-        "
-      >
-        &plus;
-      </button>
+      <button @click="redirect(1), fetch(currPage + 1)">&plus;</button>
     </div>
     <button
       :class="{
@@ -33,7 +27,8 @@
 
 <script>
 import { mapState, mapMutations, mapActions } from 'vuex'
-
+// import gsap from 'gsap'
+// TODO: Make Transition
 export default {
   asyncData({ params, error, store }) {
     const currPage = isNaN(params.page) ? 1 : Number.parseInt(params.page)
@@ -53,6 +48,7 @@ export default {
   computed: {
     ...mapState({
       darkMode: 'darkMode',
+      loading: 'loading',
     }),
     pagePosts() {
       const from = (this.currPage - 1) * 10

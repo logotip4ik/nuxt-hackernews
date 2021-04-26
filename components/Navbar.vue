@@ -46,6 +46,7 @@ export default {
 
   &--dark {
     background-color: rgb(39, 41, 51);
+    color: #aaa;
   }
 
   &__heading {
