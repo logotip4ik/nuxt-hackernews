@@ -1,6 +1,5 @@
 export default {
   // Target: https://go.nuxtjs.dev/config-target
-  target: 'static',
   loading: {
     color: '#79ffe1',
     height: '3px',
@@ -45,5 +44,4 @@ export default {
 
   // Build Configuration: https://go.nuxtjs.dev/config-build
   build: {},
-  router: { base: '/nuxt-hackernews/' },
 }
