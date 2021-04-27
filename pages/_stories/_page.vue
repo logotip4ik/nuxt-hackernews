@@ -1,13 +1,12 @@
 <template>
   <div :class="{ main: true, 'main--dark': darkMode }">
     <Navbar />
-    {{ loading }}
-    <div ref="posts" class="main__container">
+    <transition-group class="main__container" tag="div" name="fade">
       <Item v-for="post in pagePosts" :key="post.id" :post="post">
         {{ post.title }}
         <template #by>By: {{ post.by }}</template>
       </Item>
-    </div>
+    </transition-group>
     <div :class="{ main__pages: true, 'main__pages--dark': darkMode }">
       <button @click="redirect(-1)">&minus;</button>
       <span>{{ currPage }}</span>
@@ -27,9 +26,9 @@
 
 <script>
 import { mapState, mapMutations, mapActions } from 'vuex'
-// import gsap from 'gsap'
-// TODO: Make Transition
+
 export default {
+  transition: 'fade',
   asyncData({ params, error, store }) {
     const currPage = isNaN(params.page) ? 1 : Number.parseInt(params.page)
     const whitelist = [undefined, 'newstories', 'topstories', 'beststories']
@@ -64,25 +63,28 @@ export default {
       const formatedStroies = stories.slice(0, -7)
       const formatedOldStroies = oldStories.slice(0, -7)
       if (formatedStroies === formatedOldStroies) return
+      this.$nuxt.$loading.start()
+      console.log('calling fetchPostsIds and fetchPosts')
       await this.fetchPostsIds({ stories: formatedStroies })
-      await this.fetch(1, formatedStroies)
+      this.fetch(1, formatedStroies)
     },
   },
   mounted() {
     this.checkDarkMode()
   },
   methods: {
-    ...mapMutations(['checkDarkMode', 'toggleDarkMode']),
+    ...mapMutations(['checkDarkMode', 'toggleDarkMode', 'toggleLoading']),
     ...mapActions(['fetchPosts', 'fetchPostsIds']),
     fetch(currPage = this.currPage, stories = this.stories) {
       const from = 10 * (currPage - 1)
       const to = 10 * currPage
+      this.$nuxt.$loading.start()
       this.fetchPosts({
         from,
         to,
         postsIds: `${stories}StoriesIds`,
         stories: `${stories}Stories`,
-      })
+      }).then(() => this.$nuxt.$loading.finish())
     },
     redirect(num) {
       if (this.currPage + num <= 0) return
@@ -153,8 +155,8 @@ export default {
   }
   &__toggle {
     position: fixed;
-    bottom: 4rem;
-    right: 5rem;
+    bottom: 5%;
+    right: 8%;
     border: none;
     border-radius: 50%;
     width: 2.5rem;
@@ -181,15 +183,18 @@ export default {
   }
 }
 
-.news-enter-active,
-.news-leave-active {
-  transition: opacity 0ms ease-out;
+.fade-enter-active > .main__container,
+.fade-leave-active > .main__container {
+  transition: opacity 0.5s;
 }
-
-.news-enter-from,
-.news-leave-to {
-  // transform: translateX(-100%);
+.fade-enter-active > .main__container {
+  transition-timing-function: cubic-bezier(0.12, 0, 0.39, 0);
+}
+.fade-leave-active > .main__container {
+  transition-timing-function: cubic-bezier(0.61, 1, 0.88, 1);
+}
+.fade-enter > .main__container,
+.fade-leave-to > .main__container {
   opacity: 0;
-  display: none;
 }
 </style>

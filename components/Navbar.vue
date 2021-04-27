@@ -3,14 +3,13 @@
     <h1 class="nav__heading" @click="$router.push('/newstories/1')">
       HackerNews Clone
     </h1>
-
     <div class="nav__links">
       <NuxtLink
         v-for="item in links"
         :key="item.id"
         :to="item.link"
         :prefetch="true"
-        :class="darkMode ? 'dark' : null"
+        :class="{ dark: darkMode, active: route === item.name }"
       >
         {{ item.name }}
       </NuxtLink>
@@ -30,6 +29,11 @@ export default {
   }),
   computed: {
     ...mapState(['darkMode']),
+    route() {
+      const { stories } = this.$route.params
+      if (stories) return `${stories[0].toUpperCase()}${stories.slice(1)}`
+      return null
+    },
   },
 }
 </script>
@@ -42,7 +46,7 @@ export default {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  transition: background-color 200ms ease-out;
+  transition: background-color 200ms ease-out, color 200ms ease-out;
 
   &--dark {
     background-color: rgb(39, 41, 51);
@@ -70,6 +74,11 @@ export default {
         transform-origin: left center;
       }
 
+      &.active::after {
+        transform: scaleX(1);
+        transform-origin: center center;
+      }
+
       &::after {
         content: '';
         position: absolute;
@@ -90,6 +99,14 @@ export default {
         }
       }
     }
+  }
+}
+
+@media screen and (max-width: 490px) {
+  .nav {
+    flex-direction: column;
+    justify-content: center;
+    text-align: center;
   }
 }
 </style>

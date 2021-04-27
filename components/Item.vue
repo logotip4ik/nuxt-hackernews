@@ -36,6 +36,7 @@ export default {
   box-shadow: 0 0 10px 0 rgba($color: #000000, $alpha: 0.1);
   border-radius: 0.25rem;
   margin: 0.25rem 0.5rem 1rem;
+  background-color: #ffffff;
   display: flex;
   justify-content: flex-start;
   align-items: flex-start;
@@ -45,6 +46,7 @@ export default {
   &--dark {
     border-color: #333;
     box-shadow: 0 0 10px 0 rgba($color: #000000, $alpha: 0.25);
+    background-color: rgb(31, 33, 41);
   }
 
   &__heading {

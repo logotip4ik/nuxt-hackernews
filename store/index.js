@@ -8,7 +8,6 @@ export const state = () => ({
   topStories: [],
   bestStories: [],
   currPage: 0,
-  loading: false,
   darkMode: false,
 })
 
@@ -19,7 +18,6 @@ export const getters = {
   newStories: (state) => state.newStories,
   topStories: (state) => state.topStories,
   bestStories: (state) => state.bestStories,
-  loading: (state) => state.loading,
 }
 
 export const mutations = {
@@ -37,39 +35,44 @@ export const mutations = {
     const darkMode = localStorage.getItem('__darkMode')
     if (darkMode && JSON.parse(darkMode)) state.darkMode = true
   },
-  toggleLoading(state, val) {
-    if (val === true || val === false) return (state.loading = val)
-    return (state.loading = !state.loading)
-  },
   toggleDarkMode(state) {
     state.darkMode = !state.darkMode
   },
 }
 
 export const actions = {
-  async fetchPostsIds({ state, commit }, { stories }) {
+  fetchPostsIds({ state, commit }, { stories }) {
     if (state[`${stories}StoriesIds`][0]) return
-    commit('toggleLoading')
-    const post = await axios.get(
-      `https://hacker-news.firebaseio.com/v0/${stories}stories.json?print=pretty`
-    )
-    commit('setTo', { stories: `${stories}StoriesIds`, value: post.data })
-    commit('toggleLoading')
+    return new Promise((resolve, reject) => {
+      axios
+        .get(`https://hacker-news.firebaseio.com/v0/${stories}stories.json`)
+        .then(({ data: value }) =>
+          resolve(commit('setTo', { value, stories: `${stories}StoriesIds` }))
+        )
+        .catch((err) => reject(err))
+    })
   },
-  async fetchPosts({ state, commit }, { from, to, postsIds, stories }) {
+  fetchPosts({ state, commit }, { from, to, postsIds, stories }) {
     if (state[stories] && state[stories][from + 1]) return
-    commit('toggleLoading')
-    const posts = []
-    const pages = state[postsIds].slice(0, to).length
-    for (let i = from; i < pages; i += 1) {
-      const post = await axios.get(
-        `https://hacker-news.firebaseio.com/v0/item/${state[postsIds][i]}.json?print=pretty`
-      )
-      posts.push(post.data)
-    }
-    commit('toggleLoading')
-    if (stories) return commit('pushTo', { stories, posts })
-    return posts
+    return new Promise((resolve, reject) => {
+      console.log('fetching new posts', { from, to, postsIds, stories })
+      const posts = []
+      const pages = state[postsIds].slice(0, to).length
+      for (let i = from; i < pages; i += 1) {
+        posts.push(
+          axios
+            .get(
+              `https://hacker-news.firebaseio.com/v0/item/${state[postsIds][i]}.json`
+            )
+            .then(({ data }) => data)
+            .catch((err) => reject(err))
+        )
+      }
+      Promise.all(posts).then((val) => {
+        if (stories) return resolve(commit('pushTo', { stories, posts: val }))
+        return resolve(val)
+      })
+    })
   },
   async nuxtServerInit({ state, dispatch }, { params, error }) {
     state.currPage = isNaN(params.page) ? 1 : Number.parseInt(params.page)
