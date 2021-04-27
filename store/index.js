@@ -55,7 +55,6 @@ export const actions = {
   fetchPosts({ state, commit }, { from, to, postsIds, stories }) {
     if (state[stories] && state[stories][from + 1]) return
     return new Promise((resolve, reject) => {
-      console.log('fetching new posts', { from, to, postsIds, stories })
       const posts = []
       const pages = state[postsIds].slice(0, to).length
       for (let i = from; i < pages; i += 1) {
