@@ -1,7 +1,12 @@
 <template>
   <div :class="{ main: true, 'main--dark': darkMode }">
     <Navbar />
-    <transition-group class="main__container" tag="div" name="fade">
+    <transition-group
+      class="main__container"
+      tag="div"
+      name="fade"
+      mode="out-in"
+    >
       <Item v-for="post in pagePosts" :key="post.id" :post="post">
         {{ post.title }}
         <template #by>By: {{ post.by }}</template>
@@ -58,15 +63,6 @@ export default {
   watch: {
     darkMode(val) {
       localStorage.setItem('__darkMode', JSON.stringify(val))
-    },
-    async '$route.params.stories'(stories, oldStories = 'newstories') {
-      const formatedStroies = stories.slice(0, -7)
-      const formatedOldStroies = oldStories.slice(0, -7)
-      if (formatedStroies === formatedOldStroies) return
-      this.$nuxt.$loading.start()
-      console.log('calling fetchPostsIds and fetchPosts')
-      await this.fetchPostsIds({ stories: formatedStroies })
-      this.fetch(1, formatedStroies)
     },
   },
   mounted() {
@@ -188,10 +184,7 @@ export default {
   transition: opacity 0.5s;
 }
 .fade-enter-active > .main__container {
-  transition-timing-function: cubic-bezier(0.12, 0, 0.39, 0);
-}
-.fade-leave-active > .main__container {
-  transition-timing-function: cubic-bezier(0.61, 1, 0.88, 1);
+  transition-delay: 500ms;
 }
 .fade-enter > .main__container,
 .fade-leave-to > .main__container {

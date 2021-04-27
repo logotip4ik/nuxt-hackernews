@@ -1,24 +1,26 @@
 <template>
   <nav :class="{ nav: true, 'nav--dark': darkMode }">
-    <h1 class="nav__heading" @click="$router.push('/newstories/1')">
+    <h1
+      class="nav__heading"
+      @click="$router.push('/newstories/1'), preparePostsIds('newstories')"
+    >
       HackerNews Clone
     </h1>
-    <div class="nav__links">
-      <NuxtLink
+    <ul class="nav__links">
+      <li
         v-for="item in links"
         :key="item.id"
-        :to="item.link"
-        :prefetch="true"
         :class="{ dark: darkMode, active: route === item.name }"
+        @click="$router.push(item.link), preparePostsIds(item.name)"
       >
         {{ item.name }}
-      </NuxtLink>
-    </div>
+      </li>
+    </ul>
   </nav>
 </template>
 
 <script>
-import { mapState } from 'vuex'
+import { mapState, mapActions } from 'vuex'
 
 export default {
   data: () => ({
@@ -33,6 +35,22 @@ export default {
       const { stories } = this.$route.params
       if (stories) return `${stories[0].toUpperCase()}${stories.slice(1)}`
       return null
+    },
+  },
+  methods: {
+    ...mapActions(['fetchPostsIds', 'fetchPosts']),
+    preparePostsIds(storiesName) {
+      const formatedStroies = storiesName.slice(0, -7).toLowerCase()
+      this.$nuxt.$loading.start()
+      this.fetchPostsIds({ stories: formatedStroies }).then(() => {
+        this.$nuxt.$loading.start()
+        this.fetchPosts({
+          from: 0,
+          to: 10,
+          postsIds: `${formatedStroies}StoriesIds`,
+          stories: `${formatedStroies}Stories`,
+        }).then(() => this.$nuxt.$loading.finish())
+      })
     },
   },
 }
@@ -61,13 +79,15 @@ export default {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    list-style-type: none;
     padding: 0 0.25rem;
 
-    a {
+    li {
       color: rgb(73, 73, 73);
       text-decoration: none;
       margin: 0 0.5rem;
       position: relative;
+      cursor: pointer;
 
       &:hover::after {
         transform: scaleX(1);
