@@ -7,6 +7,7 @@ export const state = () => ({
   newStories: [],
   topStories: [],
   bestStories: [],
+  user: {},
   currPage: 0,
   darkMode: false,
 })
@@ -18,6 +19,8 @@ export const getters = {
   newStories: (state) => state.newStories,
   topStories: (state) => state.topStories,
   bestStories: (state) => state.bestStories,
+  user: (state) => state.user,
+  darkMode: (state) => state.darkMode,
 }
 
 export const mutations = {
@@ -27,6 +30,9 @@ export const mutations = {
   },
   setTo(state, { stories, value }) {
     state[stories].push(...value)
+  },
+  setUser(state, data) {
+    state.user = data
   },
   pushTo(state, { stories, posts }) {
     state[stories].push(...posts)
@@ -41,6 +47,14 @@ export const mutations = {
 }
 
 export const actions = {
+  fetchUser({ commit }, id) {
+    return new Promise((resolve, reject) =>
+      axios
+        .get(`https://hacker-news.firebaseio.com/v0/user/${id}.json`)
+        .then(({ data }) => resolve(commit('setUser', data)))
+        .catch((err) => reject(err))
+    )
+  },
   fetchPostsIds({ state, commit }, { stories }) {
     if (state[`${stories}StoriesIds`][0]) return
     return new Promise((resolve, reject) => {
@@ -73,30 +87,34 @@ export const actions = {
       })
     })
   },
-  async nuxtServerInit({ state, dispatch }, { params, error }) {
-    state.currPage = isNaN(params.page) ? 1 : Number.parseInt(params.page)
+  // prettier-ignore
+  // eslint-disable-next-line
+  async nuxtServerInit({ state, dispatch }, { params, error, route, redirect }) {
+    if (route.path[1] === 's') {
+      state.currPage = isNaN(params.page) ? 1 : Number.parseInt(params.page)
 
-    const whitelist = [undefined, 'newstories', 'topstories', 'beststories']
-    const idxStories = whitelist.indexOf(params.stories)
-    if (idxStories === -1) {
-      error(404)
-      return
-    }
+      const whitelist = [undefined, 'new', 'top', 'best']
+      const idxStories = whitelist.indexOf(params.stories)
+      if (idxStories === -1) return error(404)
 
-    let stories = 'new'
-    if (idxStories === 2) stories = 'top'
-    if (idxStories === 3) stories = 'best'
+      let stories = 'new'
+      if (idxStories === 2) stories = 'top'
+      if (idxStories === 3) stories = 'best'
 
-    await dispatch('fetchPostsIds', { stories })
+      await dispatch('fetchPostsIds', { stories })
 
-    const storiesIds = `${stories}StoriesIds`
-    const from = (state.currPage - 1) * 10
-    const to = state.currPage * 10
-    const posts = await dispatch('fetchPosts', {
-      from,
-      to,
-      postsIds: storiesIds,
-    })
-    state[`${stories}Stories`] = posts
+      const storiesIds = `${stories}StoriesIds`
+      const from = (state.currPage - 1) * 10
+      const to = state.currPage * 10
+      const posts = await dispatch('fetchPosts', {
+        from,
+        to,
+        postsIds: storiesIds,
+      })
+      state[`${stories}Stories`] = posts
+    } else if (route.path[1] === 'u') {
+      if (!params.id) return error('404 need to specify user id')
+      await dispatch('fetchUser', params.id)
+    } else redirect('/s')
   },
 }

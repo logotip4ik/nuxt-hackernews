@@ -2,7 +2,7 @@
   <nav :class="{ nav: true, 'nav--dark': darkMode }">
     <h1
       class="nav__heading"
-      @click="$router.push('/newstories/1'), preparePostsIds('newstories')"
+      @click="$router.push('/s/new/1'), preparePostsIds('newstories')"
     >
       HackerNews Clone
     </h1>
@@ -25,8 +25,8 @@ import { mapState, mapActions } from 'vuex'
 export default {
   data: () => ({
     links: [
-      { id: Math.random() * 100, link: '/beststories/1', name: 'Beststories' },
-      { id: Math.random() * 100, link: '/topstories/1', name: 'Topstories' },
+      { id: Math.random() * 100, link: '/s/best/1', name: 'Beststories' },
+      { id: Math.random() * 100, link: '/s/top/1', name: 'Topstories' },
     ],
   }),
   computed: {
@@ -67,7 +67,7 @@ export default {
   transition: background-color 200ms ease-out, color 200ms ease-out;
 
   &--dark {
-    background-color: rgb(39, 41, 51);
+    background-color: #272933;
     color: #aaa;
   }
 

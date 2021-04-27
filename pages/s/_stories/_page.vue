@@ -9,7 +9,7 @@
     >
       <Item v-for="post in pagePosts" :key="post.id" :post="post">
         {{ post.title }}
-        <template #by>By: {{ post.by }}</template>
+        <template #by>{{ post.by }}</template>
       </Item>
     </transition-group>
     <div :class="{ main__pages: true, 'main__pages--dark': darkMode }">
@@ -36,7 +36,7 @@ export default {
   transition: 'fade',
   asyncData({ params, error, store }) {
     const currPage = isNaN(params.page) ? 1 : Number.parseInt(params.page)
-    const whitelist = [undefined, 'newstories', 'topstories', 'beststories']
+    const whitelist = [undefined, 'new', 'top', 'best']
     const idxStories = whitelist.indexOf(params.stories)
     if (idxStories === -1) {
       error(404)
@@ -65,11 +65,8 @@ export default {
       localStorage.setItem('__darkMode', JSON.stringify(val))
     },
   },
-  mounted() {
-    this.checkDarkMode()
-  },
   methods: {
-    ...mapMutations(['checkDarkMode', 'toggleDarkMode', 'toggleLoading']),
+    ...mapMutations(['toggleDarkMode', 'toggleLoading']),
     ...mapActions(['fetchPosts', 'fetchPostsIds']),
     fetch(currPage = this.currPage, stories = this.stories) {
       const from = 10 * (currPage - 1)
@@ -84,7 +81,7 @@ export default {
     },
     redirect(num) {
       if (this.currPage + num <= 0) return
-      this.$router.push(`/${this.stories}stories/${this.currPage + num}`)
+      this.$router.push(`/s/${this.stories}/${this.currPage + num}`)
     },
   },
 }
@@ -97,7 +94,7 @@ export default {
   transition: background-color 200ms ease-out, color 200ms ease-out;
 
   &--dark {
-    background-color: rgb(31, 33, 41);
+    background-color: #1f2129;
     color: #aaa;
   }
 

@@ -7,12 +7,17 @@
     >
       <slot></slot>
     </a>
-    <small><slot name="by"></slot></small>
+    <small class="item__by">
+      By:
+      <span @click="openUser($slots.by[0].text)">
+        <slot name="by"></slot>
+      </span>
+    </small>
   </div>
 </template>
 
 <script>
-import { mapState } from 'vuex'
+import { mapState, mapActions } from 'vuex'
 
 export default {
   props: {
@@ -24,6 +29,16 @@ export default {
   },
   computed: {
     ...mapState(['darkMode']),
+  },
+  methods: {
+    ...mapActions(['fetchUser']),
+    openUser(id) {
+      this.$nuxt.$loading.start()
+      this.fetchUser(id).then(() => {
+        this.$router.push(`/u/${id}`)
+        this.$nuxt.$loading.finish()
+      })
+    },
   },
 }
 </script>
@@ -41,7 +56,8 @@ export default {
   justify-content: flex-start;
   align-items: flex-start;
   flex-direction: column;
-  transition: border-color 200ms ease-out;
+  transition: background-color 200ms ease-out, color 200ms ease-out,
+    border-color 200ms ease-out;
 
   &--dark {
     border-color: #333;
@@ -63,6 +79,15 @@ export default {
 
     &--dark:hover {
       color: whitesmoke;
+    }
+  }
+  &__by {
+    font-size: 0.9rem;
+    span {
+      cursor: pointer;
+      &:hover {
+        text-decoration: underline;
+      }
     }
   }
 }

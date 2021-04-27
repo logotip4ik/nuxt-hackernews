@@ -2,6 +2,19 @@
   <Nuxt keep-alive />
 </template>
 
+<script>
+import { mapMutations } from 'vuex'
+
+export default {
+  mounted() {
+    this.checkDarkMode()
+  },
+  methods: {
+    ...mapMutations(['checkDarkMode']),
+  },
+}
+</script>
+
 <style>
 *,
 *::before,
