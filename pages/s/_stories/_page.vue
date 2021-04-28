@@ -1,6 +1,5 @@
 <template>
   <div :class="{ main: true, 'main--dark': darkMode }">
-    <Navbar />
     <transition-group
       class="main__container"
       tag="div"
@@ -17,15 +16,6 @@
       <span>{{ currPage }}</span>
       <button @click="redirect(1), fetch(currPage + 1)">&plus;</button>
     </div>
-    <button
-      :class="{
-        main__toggle: true,
-        'main__toggle--dark': darkMode,
-      }"
-      @click="toggleDarkMode"
-    >
-      {{ darkMode ? 'light' : 'dark' }}
-    </button>
   </div>
 </template>
 
@@ -176,15 +166,15 @@ export default {
   }
 }
 
-.fade-enter-active > .main__container,
-.fade-leave-active > .main__container {
+.fade-enter-active,
+.fade-leave-active {
   transition: opacity 0.5s;
 }
-.fade-enter-active > .main__container {
+.fade-enter-active {
   transition-delay: 500ms;
 }
-.fade-enter > .main__container,
-.fade-leave-to > .main__container {
+.fade-enter,
+.fade-leave-to {
   opacity: 0;
 }
 </style>

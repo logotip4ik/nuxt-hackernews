@@ -1,7 +1,5 @@
 <template>
   <div :class="{ main: true, 'main--dark': darkMode }">
-    <Navbar />
-    <!-- <div class="main__container"> -->
     <table>
       <tbody>
         <tr>
@@ -10,8 +8,7 @@
         </tr>
         <tr :class="{ inverted: true, 'inverted--dark': darkMode }">
           <td>Created:</td>
-          <!-- TODO: need to find out what this dateTime format is -->
-          <td class="right">{{ user.created }}</td>
+          <td class="right">{{ daysToNow }}</td>
         </tr>
         <tr>
           <td>Karma:</td>
@@ -26,7 +23,6 @@
         </tr>
       </tbody>
     </table>
-    <!-- </div> -->
   </div>
 </template>
 
@@ -36,20 +32,13 @@ import { mapGetters } from 'vuex'
 export default {
   computed: {
     ...mapGetters(['user', 'darkMode']),
-    // daysToNow() {
-    //   if (!this.user.created) return ''
-    //   const now = new Date()
-    //   console.log(now.getTime())
-    //   console.log(now.getTime() - Number(this.user.created))
-    //   console.log(new Date(now.getTime() - Number(this.user.created)))
-    //   // console.log(new Date(now.getTime() - Number(this.user.created)))
-    //   return ''
-    //   // return Intl.DateTimeFormat({
-    //   //   day: 'numeric',
-    //   //   month: 'long',
-    //   //   year: 'numeric',
-    //   // }).format(new Date(this.user.created))
-    // },
+    daysToNow() {
+      return Intl.DateTimeFormat({
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric',
+      }).format(new Date(this.user.created * 1000))
+    },
   },
 }
 </script>
@@ -59,6 +48,8 @@ export default {
   padding-bottom: 2rem;
   color: rgb(73, 73, 73);
   transition: background-color 200ms ease-out, color 200ms ease-out;
+  min-height: calc(100vh - 56px);
+  padding-top: 1rem;
 
   &--dark {
     background-color: #1f2129;
@@ -68,7 +59,7 @@ export default {
   table {
     width: 100%;
     max-width: 700px;
-    margin: 0.25rem auto 0;
+    margin: 0 auto;
     text-align: left;
     font-size: 1.1rem;
     border-spacing: 5px;

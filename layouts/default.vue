@@ -1,21 +1,36 @@
 <template>
-  <Nuxt keep-alive />
+  <div :class="{ 'main-layout': true, 'main-layout--dark': darkMode }">
+    <Navbar />
+    <Nuxt keep-alive />
+    <button
+      :class="{
+        main__toggle: true,
+        'main__toggle--dark': darkMode,
+      }"
+      @click="toggleDarkMode"
+    >
+      {{ darkMode ? 'light' : 'dark' }}
+    </button>
+  </div>
 </template>
 
 <script>
-import { mapMutations } from 'vuex'
+import { mapMutations, mapState } from 'vuex'
 
 export default {
+  computed: {
+    ...mapState(['darkMode']),
+  },
   mounted() {
     this.checkDarkMode()
   },
   methods: {
-    ...mapMutations(['checkDarkMode']),
+    ...mapMutations(['checkDarkMode', 'toggleDarkMode']),
   },
 }
 </script>
 
-<style>
+<style lang="scss">
 *,
 *::before,
 *::after {
@@ -34,7 +49,12 @@ html {
 body {
   min-height: 100%;
 }
-.main {
+.main-layout {
   min-height: 100vh;
+
+  &--dark {
+    background-color: #1f2129;
+    color: #aaa;
+  }
 }
 </style>
