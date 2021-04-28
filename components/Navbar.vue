@@ -10,7 +10,7 @@
       <li
         v-for="item in links"
         :key="item.id"
-        :class="{ dark: darkMode, active: route === item.name }"
+        :class="{ dark: darkMode, active: item.name.includes(route) }"
         @click="$router.push(item.link), preparePostsIds(item.name)"
       >
         {{ item.name }}

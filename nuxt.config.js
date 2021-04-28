@@ -16,6 +16,17 @@ export default {
       { hid: 'description', name: 'description', content: '' },
     ],
     link: [{ rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }],
+    // script: [
+    //   {
+    //     src:
+    //       'https://cdn.jsdelivr.net/gh/WyrdNexus/js-minimal-android-swipe-detect/uiSwipe.js',
+    //     body: true,
+    //     crossorigin: 'anonymous',
+    //   },
+    // ],
+  },
+  server: {
+    host: '0.0.0.0',
   },
 
   // Global CSS: https://go.nuxtjs.dev/config-css
