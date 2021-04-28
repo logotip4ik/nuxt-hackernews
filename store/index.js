@@ -1,4 +1,5 @@
 import axios from 'axios'
+import Dexie from 'dexie'
 
 export const state = () => ({
   newStoriesIds: [],
@@ -10,6 +11,8 @@ export const state = () => ({
   user: {},
   currPage: 0,
   darkMode: false,
+  db: {},
+  starredItems: [],
 })
 
 export const getters = {
@@ -23,50 +26,56 @@ export const getters = {
   darkMode: (state) => state.darkMode,
 }
 
-export const mutations = {
-  changePage(state, num) {
-    if (num < 0 && state.currPage === 0) return
-    state.currPage += num
-  },
-  setTo(state, { stories, value }) {
-    state[stories].push(...value)
-  },
-  setUser(state, data) {
-    state.user = data
-  },
-  pushTo(state, { stories, posts }) {
-    state[stories].push(...posts)
-  },
-  checkDarkMode(state) {
-    const darkMode = localStorage.getItem('__darkMode')
-    if (darkMode && JSON.parse(darkMode)) state.darkMode = true
-  },
-  toggleDarkMode(state) {
+export const actions = {
+  toggleDarkMode({ state }) {
     state.darkMode = !state.darkMode
   },
-}
-
-export const actions = {
-  fetchUser({ commit }, id) {
+  initDB({ state }) {
+    const db = new Dexie('nuxt-hackernews')
+    db.version(1).stores({
+      starred: '&id, title, addedAt',
+    })
+    db.starred
+      .orderBy('addedAt')
+      .reverse()
+      .toArray()
+      .then((val) => state.starredItems.push(...val))
+    state.db = db
+  },
+  addToStarredItems({ state }, val) {
+    state.db.starred.add(val)
+    state.starredItems.unshift(val)
+  },
+  removeFromStarredItems({ state }, val) {
+    const { id } = val
+    let i
+    for (i = 0; i < state.starredItems.length; i++) {
+      const post = state.starredItems[i]
+      if (post.id === id) break
+    }
+    state.starredItems.splice(i, 1)
+    state.db.starred.where({ id }).delete()
+  },
+  fetchUser({ state }, id) {
     return new Promise((resolve, reject) =>
       axios
         .get(`https://hacker-news.firebaseio.com/v0/user/${id}.json`)
-        .then(({ data }) => resolve(commit('setUser', data)))
+        .then(({ data }) => resolve((state.user = data)))
         .catch((err) => reject(err))
     )
   },
-  fetchPostsIds({ state, commit }, { stories }) {
+  fetchPostsIds({ state }, { stories }) {
     if (state[`${stories}StoriesIds`][0]) return
     return new Promise((resolve, reject) => {
       axios
         .get(`https://hacker-news.firebaseio.com/v0/${stories}stories.json`)
-        .then(({ data: value }) =>
-          resolve(commit('setTo', { value, stories: `${stories}StoriesIds` }))
+        .then(({ data }) =>
+          resolve(state[`${stories}StoriesIds`].push(...data))
         )
         .catch((err) => reject(err))
     })
   },
-  fetchPosts({ state, commit }, { from, to, postsIds, stories }) {
+  fetchPosts({ state }, { from, to, postsIds, stories }) {
     if (state[stories] && state[stories][from + 1]) return
     return new Promise((resolve, reject) => {
       const posts = []
@@ -81,8 +90,9 @@ export const actions = {
             .catch((err) => reject(err))
         )
       }
-      Promise.all(posts).then((val) => {
-        if (stories) return resolve(commit('pushTo', { stories, posts: val }))
+      Promise.all(posts).then((_val) => {
+        const val = _val.filter(Boolean)
+        if (stories) return resolve(state[stories].push(...val))
         return resolve(val)
       })
     })
@@ -91,6 +101,8 @@ export const actions = {
   // eslint-disable-next-line
   async nuxtServerInit({ state, dispatch }, { params, error, route, redirect }) {
     if (route.path[1] === 's') {
+      // stands for starred route
+      if (route.path[3] === 's') return
       state.currPage = isNaN(params.page) ? 1 : Number.parseInt(params.page)
 
       const whitelist = [undefined, 'new', 'top', 'best']
@@ -118,3 +130,5 @@ export const actions = {
     } else redirect('/s')
   },
 }
+
+export const strict = false

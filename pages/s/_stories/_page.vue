@@ -34,7 +34,7 @@
 </template>
 
 <script>
-import { mapState, mapMutations, mapActions } from 'vuex'
+import { mapState, mapActions } from 'vuex'
 import gsap from 'gsap'
 
 export default {
@@ -80,13 +80,12 @@ export default {
     this.$refs.posts.addEventListener('touchend', this.swipeEnd, false)
   },
   beforeDestroy() {
-    this.$refs.posts.removeEventListener(this.swipeStart)
-    this.$refs.posts.removeEventListener(this.swipeMove)
-    this.$refs.posts.removeEventListener(this.swipeEnd)
+    this.$refs.posts.removeEventListener('touchstart', this.swipeStart)
+    this.$refs.posts.removeEventListener('touchmove', this.swipeMove)
+    this.$refs.posts.removeEventListener('touchend', this.swipeEnd)
   },
   methods: {
-    ...mapMutations(['toggleDarkMode', 'toggleLoading']),
-    ...mapActions(['fetchPosts', 'fetchPostsIds']),
+    ...mapActions(['fetchPosts', 'fetchPostsIds', 'toggleDarkMode']),
     fetch(currPage = this.currPage, stories = this.stories) {
       const from = 10 * (currPage - 1)
       const to = 10 * currPage
@@ -221,34 +220,6 @@ export default {
       }
     }
   }
-  &__toggle {
-    position: fixed;
-    bottom: 5%;
-    right: 8%;
-    border: none;
-    border-radius: 50%;
-    width: 2.5rem;
-    height: 2.5rem;
-    box-shadow: 0 0 10px 0 rgba($color: #000000, $alpha: 0.25);
-    background-color: whitesmoke;
-    cursor: pointer;
-    transition: background-color 200ms ease-out, color 200ms ease-out;
-
-    &:hover {
-      background-color: darken($color: #ffffff, $amount: 10);
-    }
-
-    &--dark {
-      color: #aaa;
-      border-color: #333;
-      background-color: #1f2129;
-
-      &:hover {
-        color: white;
-        background-color: lighten($color: #1f2129, $amount: 10);
-      }
-    }
-  }
 }
 
 .loader {
@@ -264,6 +235,7 @@ export default {
   box-shadow: 0 0 10px 0 rgba($color: #000000, $alpha: 0.25);
   text-align: center;
   padding-top: 0.9rem;
+  z-index: 99;
 
   &--dark {
     background-color: #1f2129;

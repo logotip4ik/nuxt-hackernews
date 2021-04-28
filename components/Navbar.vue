@@ -10,7 +10,10 @@
       <li
         v-for="item in links"
         :key="item.id"
-        :class="{ dark: darkMode, active: item.name.includes(route) }"
+        :class="{
+          dark: darkMode,
+          active: item.name.toLowerCase().includes(route),
+        }"
         @click="$router.push(item.link), preparePostsIds(item.name)"
       >
         {{ item.name }}
@@ -27,19 +30,22 @@ export default {
     links: [
       { id: Math.random() * 100, link: '/s/best/1', name: 'Beststories' },
       { id: Math.random() * 100, link: '/s/top/1', name: 'Topstories' },
+      { id: Math.random() * 100, link: '/s/starred', name: 'Starred' },
     ],
   }),
   computed: {
     ...mapState(['darkMode']),
     route() {
+      const name = this.$route.name.split('-')[1]
+      if (name !== 'stories') return name
       const { stories } = this.$route.params
-      if (stories) return `${stories[0].toUpperCase()}${stories.slice(1)}`
-      return null
+      return !stories ? 'new' : stories
     },
   },
   methods: {
     ...mapActions(['fetchPostsIds', 'fetchPosts']),
     preparePostsIds(storiesName) {
+      if (storiesName === 'Starred') return
       const formatedStroies = storiesName.slice(0, -7).toLowerCase()
       this.$nuxt.$loading.start()
       this.fetchPostsIds({ stories: formatedStroies }).then(() => {

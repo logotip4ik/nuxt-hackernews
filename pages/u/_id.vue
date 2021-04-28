@@ -19,7 +19,7 @@
           :class="{ inverted: true, 'inverted--dark': darkMode }"
         >
           <td>About:</td>
-          <td class="right" v-html="user.about"></td>
+          <td class="right small" v-html="user.about"></td>
         </tr>
       </tbody>
     </table>
@@ -69,6 +69,9 @@ export default {
     }
     .right {
       font-size: 1rem;
+    }
+    .small {
+      font-size: 0.8rem;
     }
     .inverted {
       position: relative;
