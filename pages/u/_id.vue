@@ -30,6 +30,20 @@
 import { mapGetters } from 'vuex'
 
 export default {
+  head() {
+    return {
+      title: `${this.user.id} - Hackernews User`,
+      meta: [
+        this.user.about
+          ? {
+              hid: 'description',
+              name: 'description',
+              content: this.user.about,
+            }
+          : null,
+      ],
+    }
+  },
   computed: {
     ...mapGetters(['user', 'darkMode']),
     daysToNow() {

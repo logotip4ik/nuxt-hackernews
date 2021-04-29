@@ -1,12 +1,20 @@
 <template>
   <div :class="{ item: true, 'item--dark': darkMode }">
     <a
+      v-if="post.url"
       :class="{ item__heading: true, 'item__heading--dark': darkMode }"
       :href="`${post.url}`"
       target="_blank"
     >
       <slot></slot>
     </a>
+    <p
+      v-else
+      :class="{ item__heading: true, 'item__heading--dark': darkMode }"
+      @click="openItem(post.id)"
+    >
+      <slot></slot>
+    </p>
     <small class="item__by">
       By:
       <span @click="openUser($slots.by[0].text)">
@@ -66,7 +74,12 @@ export default {
     },
   },
   methods: {
-    ...mapActions(['fetchUser', 'addToStarredItems', 'removeFromStarredItems']),
+    ...mapActions([
+      'fetchUser',
+      'fetchItem',
+      'addToStarredItems',
+      'removeFromStarredItems',
+    ]),
     starItem() {
       const item = { ...this.post, addedAt: new Date().getTime() }
       this.addToStarredItems(item)
@@ -75,6 +88,13 @@ export default {
       this.$nuxt.$loading.start()
       this.fetchUser(id).then(() => {
         this.$router.push(`/u/${id}`)
+        this.$nuxt.$loading.finish()
+      })
+    },
+    openItem(id) {
+      this.$nuxt.$loading.start()
+      this.fetchItem([id, true]).then(() => {
+        this.$router.push(`/i/${id}`)
         this.$nuxt.$loading.finish()
       })
     },

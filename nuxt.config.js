@@ -16,14 +16,6 @@ export default {
       { hid: 'description', name: 'description', content: '' },
     ],
     link: [{ rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }],
-    // script: [
-    //   {
-    //     src:
-    //       'https://cdn.jsdelivr.net/gh/WyrdNexus/js-minimal-android-swipe-detect/uiSwipe.js',
-    //     body: true,
-    //     crossorigin: 'anonymous',
-    //   },
-    // ],
   },
   server: {
     host: '0.0.0.0',
@@ -34,6 +26,7 @@ export default {
 
   // Plugins to run before rendering page: https://go.nuxtjs.dev/config-plugins
   plugins: [],
+  transition: 'fade',
 
   // Auto import components: https://go.nuxtjs.dev/config-components
   components: true,
@@ -42,6 +35,7 @@ export default {
   buildModules: [
     // https://go.nuxtjs.dev/eslint
     '@nuxtjs/eslint-module',
+    'nuxt-vite',
   ],
 
   // Modules: https://go.nuxtjs.dev/config-modules

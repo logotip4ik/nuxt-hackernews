@@ -13,6 +13,7 @@ export const state = () => ({
   darkMode: false,
   db: {},
   starredItems: [],
+  hnItem: {},
 })
 
 export const getters = {
@@ -55,6 +56,19 @@ export const actions = {
     }
     state.starredItems.splice(i, 1)
     state.db.starred.where({ id }).delete()
+  },
+  async fetchItem({ state, dispatch }, [id, initial = false]) {
+    const { data } = await axios.get(
+      `https://hacker-news.firebaseio.com/v0/item/${id}.json`
+    )
+    if (initial) state.hnItem = data
+    if (!data.kids) return data
+    const kids = []
+    for (let i = 0; i < data.kids.length; i++) {
+      kids.push(dispatch('fetchItem', [data.kids[i]]))
+    }
+    data.kids = await Promise.all(kids)
+    return data
   },
   fetchUser({ state }, id) {
     return new Promise((resolve, reject) =>
@@ -127,7 +141,11 @@ export const actions = {
     } else if (route.path[1] === 'u') {
       if (!params.id) return error('404 need to specify user id')
       await dispatch('fetchUser', params.id)
-    } else redirect('/s')
+    } else if (route.path[1] === 'i') {
+      if (!params.id) return error(404)
+      await dispatch('fetchItem', [params.id, true])
+    }
+    else redirect('/s')
   },
 }
 
