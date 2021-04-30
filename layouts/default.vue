@@ -46,6 +46,11 @@ export default {
   computed: {
     ...mapState(['darkMode']),
   },
+  watch: {
+    darkMode(val) {
+      localStorage.setItem('__darkMode', JSON.stringify(val))
+    },
+  },
   mounted() {
     const darkMode = localStorage.getItem('__darkMode')
     if (darkMode && JSON.parse(darkMode)) this.toggleDarkMode()
@@ -86,13 +91,14 @@ body {
 }
 
 .toggle {
+  $toggle-size: 3.5rem;
   position: fixed;
   bottom: 5%;
   right: 8%;
   border: none;
   border-radius: 50%;
-  width: 2.5rem;
-  height: 2.5rem;
+  width: $toggle-size;
+  height: $toggle-size;
   box-shadow: 0 0 10px 0 rgba($color: #000000, $alpha: 0.25);
   background-color: whitesmoke;
   cursor: pointer;
@@ -114,7 +120,7 @@ body {
   }
 
   svg {
-    transform: scale(1.1);
+    transform: scale(1.5);
   }
 }
 </style>

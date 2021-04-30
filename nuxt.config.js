@@ -2,7 +2,7 @@ export default {
   // Target: https://go.nuxtjs.dev/config-target
   loading: {
     color: '#79ffe1',
-    height: '3px',
+    height: '4px',
   },
   // Global page headers: https://go.nuxtjs.dev/config-head
   head: {
@@ -22,11 +22,14 @@ export default {
   },
 
   // Global CSS: https://go.nuxtjs.dev/config-css
-  css: [],
+  css: ['~assets/main.css'],
 
   // Plugins to run before rendering page: https://go.nuxtjs.dev/config-plugins
   plugins: [],
-  transition: 'fade',
+  pageTransition: {
+    name: 'fade',
+    mode: 'out-in',
+  },
 
   // Auto import components: https://go.nuxtjs.dev/config-components
   components: true,

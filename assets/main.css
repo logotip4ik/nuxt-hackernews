@@ -1,0 +1,21 @@
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.5s;
+}
+/* .fade-enter-active {
+  transition-delay: 500ms;
+} */
+.fade-enter,
+.fade-leave-to {
+  opacity: 0;
+}
+
+.container {
+  max-width: 90vw;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  padding: 0.25rem;
+  margin: 0 auto;
+}

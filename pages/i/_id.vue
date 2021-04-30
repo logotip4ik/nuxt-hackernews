@@ -3,7 +3,7 @@
     <div class="details">
       <h2 class="details__header">{{ post.title }}</h2>
       <small class="details__by">
-        By: <span @click="openUser(post.by)">{{ post.by }}</span>
+        By: <NuxtLink :to="`/u/${post.by}`">{{ post.by }}</NuxtLink>
       </small>
       <p class="details__text" v-html="post.text"></p>
     </div>
@@ -14,48 +14,28 @@
 </template>
 
 <script>
-import { mapState, mapActions } from 'vuex'
-
 export default {
+  async asyncData({ store, params, error }) {
+    if (!params.id) return error(404)
+    const post = await store.dispatch('fetchItem', params.id)
+    return { post }
+  },
   head() {
     return {
       title: this.post.title,
     }
   },
-  computed: {
-    ...mapState({ post: 'hnItem' }),
-  },
-  methods: {
-    ...mapActions(['fetchUser']),
-    openUser(id) {
-      this.$nuxt.$loading.start()
-      this.fetchUser(id).then(() => {
-        this.$router.push(`/u/${id}`)
-        this.$nuxt.$loading.finish()
-      })
-    },
-  },
 }
 </script>
 
 <style lang="scss">
-.container {
-  max-width: 90vw;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  align-items: center;
-  padding: 0.25rem;
-  margin: 0 auto;
-}
-
 .details {
   width: 100%;
 
   &__header {
   }
   &__by {
-    span {
+    a {
       color: currentColor;
       text-decoration: none;
       cursor: pointer;

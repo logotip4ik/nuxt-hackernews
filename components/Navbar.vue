@@ -1,23 +1,18 @@
 <template>
   <nav :class="{ nav: true, 'nav--dark': darkMode }">
-    <h1
-      class="nav__heading"
-      @click="$router.push('/s/new/1'), preparePostsIds('newstories')"
-    >
-      HackerNews Clone
-    </h1>
+    <NuxtLink class="nav__heading" to="/s/new/1"> HackerNews Clone </NuxtLink>
     <ul class="nav__links">
-      <li
+      <NuxtLink
         v-for="item in links"
         :key="item.id"
         :class="{
           dark: darkMode,
           active: item.name.toLowerCase().includes(route),
         }"
-        @click="$router.push(item.link), preparePostsIds(item.name)"
+        :to="item.link"
       >
         {{ item.name }}
-      </li>
+      </NuxtLink>
     </ul>
   </nav>
 </template>
@@ -80,6 +75,9 @@ export default {
   &__heading {
     font-size: 2rem;
     cursor: pointer;
+    color: currentColor;
+    text-decoration: none;
+    font-weight: bold;
   }
   &__links {
     display: flex;
@@ -88,7 +86,7 @@ export default {
     list-style-type: none;
     padding: 0 0.25rem;
 
-    li {
+    a {
       color: rgb(73, 73, 73);
       text-decoration: none;
       margin: 0 0.5rem;

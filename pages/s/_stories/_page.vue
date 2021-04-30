@@ -19,27 +19,28 @@
         />
       </svg>
     </div>
-    <div class="main__container">
-      <Item v-for="post in pagePosts" :key="post.id" :post="post">
+    <div class="container">
+      <Item v-for="post in posts" :key="post.id" :post="post">
         {{ post.title }}
         <template #by>{{ post.by }}</template>
       </Item>
     </div>
     <div :class="{ main__pages: true, 'main__pages--dark': darkMode }">
-      <button @click="redirect(-1)">&minus;</button>
+      <NuxtLink v-if="currPage - 1 > 0" :to="`/s/${stories}/${currPage - 1}`">
+        &minus;
+      </NuxtLink>
       <span>{{ currPage }}</span>
-      <button @click="redirect(1), fetch(currPage + 1)">&plus;</button>
+      <NuxtLink :to="`/s/${stories}/${currPage + 1}`">&plus;</NuxtLink>
     </div>
   </div>
 </template>
 
 <script>
-import { mapState, mapActions } from 'vuex'
+import { mapActions } from 'vuex'
 import gsap from 'gsap'
 
 export default {
-  transition: 'fade',
-  asyncData({ params, error, store }) {
+  async asyncData({ params, error, store }) {
     const currPage = isNaN(params.page) ? 1 : Number.parseInt(params.page)
     const whitelist = [undefined, 'new', 'top', 'best']
     const idxStories = whitelist.indexOf(params.stories)
@@ -52,28 +53,20 @@ export default {
     if (idxStories === 2) stories = 'top'
     if (idxStories === 3) stories = 'best'
 
-    return { stories, currPage, posts: store.getters[`${stories}Stories`] }
+    const postsIds = await store.dispatch('fetchPostsIds', { stories })
+    const posts = await store.dispatch('fetchPosts', {
+      from: 10 * (currPage - 1),
+      to: 10 * currPage,
+      postsIds,
+      stories: `${stories}Stories`,
+    })
+
+    return { stories, currPage, posts, darkMode: store.getters.darkMode }
   },
   data: () => ({
     pStart: { x: 0, y: 0 },
     pStop: { x: 0, y: 0 },
   }),
-  computed: {
-    ...mapState({
-      darkMode: 'darkMode',
-      loading: 'loading',
-    }),
-    pagePosts() {
-      const from = (this.currPage - 1) * 10
-      const to = this.currPage * 10
-      return this.posts?.slice(from, to)
-    },
-  },
-  watch: {
-    darkMode(val) {
-      localStorage.setItem('__darkMode', JSON.stringify(val))
-    },
-  },
   mounted() {
     this.$refs.posts.addEventListener('touchstart', this.swipeStart, false)
     this.$refs.posts.addEventListener('touchmove', this.swipeMove)
@@ -85,25 +78,10 @@ export default {
     this.$refs.posts.removeEventListener('touchend', this.swipeEnd)
   },
   methods: {
-    ...mapActions(['fetchPosts', 'fetchPostsIds', 'toggleDarkMode']),
-    fetch(currPage = this.currPage, stories = this.stories) {
-      const from = 10 * (currPage - 1)
-      const to = 10 * currPage
-      this.$nuxt.$loading.start()
-      this.fetchPosts({
-        from,
-        to,
-        postsIds: `${stories}StoriesIds`,
-        stories: `${stories}Stories`,
-      }).then(() => this.$nuxt.$loading.finish())
-    },
-    redirect(num) {
-      if (this.currPage + num <= 0) return
-      this.$router.push(`/s/${this.stories}/${this.currPage + num}`)
-    },
+    ...mapActions(['toggleDarkMode']),
     refresh() {
       gsap.to(this.$refs.loaderArrow, {
-        rotateZ: 720,
+        rotateZ: 1440,
         repeat: -1,
         duration: 0.9,
         ease: 'none',
@@ -172,15 +150,6 @@ export default {
     }
   }
 
-  &__container {
-    max-width: 90vw;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    align-items: center;
-    padding: 0.25rem;
-    margin: 0 auto;
-  }
   &__pages {
     margin-top: 1rem;
     width: 100%;
@@ -188,7 +157,7 @@ export default {
     justify-content: center;
     align-items: center;
 
-    button {
+    a {
       $button-size: 35px;
       appearance: none;
       border-radius: 100%;
@@ -200,6 +169,8 @@ export default {
       background-color: transparent;
       font-size: 1.5rem;
       transition: background-color 200ms ease-out;
+      text-align: center;
+      text-decoration: none;
       &:hover {
         background-color: darken($color: #ffffff, $amount: 10);
       }
@@ -210,7 +181,7 @@ export default {
       margin: 0 1rem;
     }
 
-    &--dark button {
+    &--dark a {
       color: #aaa;
       border-color: #333;
       box-shadow: 0 0 10px 0 rgba($color: #000000, $alpha: 0.25);
@@ -243,17 +214,5 @@ export default {
   svg {
     transform: scale(1.75);
   }
-}
-
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.5s;
-}
-.fade-enter-active {
-  transition-delay: 500ms;
-}
-.fade-enter,
-.fade-leave-to {
-  opacity: 0;
 }
 </style>

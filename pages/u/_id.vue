@@ -27,31 +27,29 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex'
+import * as timeago from 'timeago.js'
 
 export default {
+  async asyncData({ store, params, error }) {
+    if (!params.id) return error(404)
+    const user = await store.dispatch('fetchUser', params.id)
+    return { user, darkMode: store.getters.darkMode }
+  },
   head() {
     return {
       title: `${this.user.id} - Hackernews User`,
       meta: [
-        this.user.about
-          ? {
-              hid: 'description',
-              name: 'description',
-              content: this.user.about,
-            }
-          : null,
+        {
+          hid: 'description',
+          name: 'description',
+          content: `Name: ${this.user.id}, Created: ${this.daysToNow}, Karma: ${this.user.karma}`,
+        },
       ],
     }
   },
   computed: {
-    ...mapGetters(['user', 'darkMode']),
     daysToNow() {
-      return Intl.DateTimeFormat({
-        day: '2-digit',
-        month: 'long',
-        year: 'numeric',
-      }).format(new Date(this.user.created * 1000))
+      return timeago.format(this.user.created * 1000)
     },
   },
 }

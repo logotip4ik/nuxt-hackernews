@@ -5,15 +5,14 @@ export const state = () => ({
   newStoriesIds: [],
   topStoriesIds: [],
   bestStoriesIds: [],
-  newStories: [],
-  topStories: [],
-  bestStories: [],
-  user: {},
+  newStories: new Array(399),
+  topStories: new Array(399),
+  bestStories: new Array(399),
   currPage: 0,
   darkMode: false,
   db: {},
+  user: {},
   starredItems: [],
-  hnItem: {},
 })
 
 export const getters = {
@@ -23,7 +22,6 @@ export const getters = {
   newStories: (state) => state.newStories,
   topStories: (state) => state.topStories,
   bestStories: (state) => state.bestStories,
-  user: (state) => state.user,
   darkMode: (state) => state.darkMode,
 }
 
@@ -57,11 +55,10 @@ export const actions = {
     state.starredItems.splice(i, 1)
     state.db.starred.where({ id }).delete()
   },
-  async fetchItem({ state, dispatch }, [id, initial = false]) {
+  async fetchItem({ dispatch }, id) {
     const { data } = await axios.get(
       `https://hacker-news.firebaseio.com/v0/item/${id}.json`
     )
-    if (initial) state.hnItem = data
     if (!data.kids) return data
     const kids = []
     for (let i = 0; i < data.kids.length; i++) {
@@ -71,34 +68,40 @@ export const actions = {
     return data
   },
   fetchUser({ state }, id) {
+    if (state.user.id === id) return state.user
     return new Promise((resolve, reject) =>
       axios
         .get(`https://hacker-news.firebaseio.com/v0/user/${id}.json`)
-        .then(({ data }) => resolve((state.user = data)))
+        .then(({ data }) => {
+          state.user = data
+          resolve(data)
+        })
         .catch((err) => reject(err))
     )
   },
   fetchPostsIds({ state }, { stories }) {
-    if (state[`${stories}StoriesIds`][0]) return
+    if (state[`${stories}StoriesIds`][0]) return state[`${stories}StoriesIds`]
     return new Promise((resolve, reject) => {
       axios
         .get(`https://hacker-news.firebaseio.com/v0/${stories}stories.json`)
-        .then(({ data }) =>
-          resolve(state[`${stories}StoriesIds`].push(...data))
-        )
+        .then(({ data }) => {
+          state[`${stories}StoriesIds`] = data
+          resolve(data)
+        })
         .catch((err) => reject(err))
     })
   },
   fetchPosts({ state }, { from, to, postsIds, stories }) {
-    if (state[stories] && state[stories][from + 1]) return
+    if (state[stories] && state[stories][from] && state[stories][to - 1])
+      return state[stories].slice(from, to)
     return new Promise((resolve, reject) => {
       const posts = []
-      const pages = state[postsIds].slice(0, to).length
+      const pages = postsIds.slice(0, to).length
       for (let i = from; i < pages; i += 1) {
         posts.push(
           axios
             .get(
-              `https://hacker-news.firebaseio.com/v0/item/${state[postsIds][i]}.json`
+              `https://hacker-news.firebaseio.com/v0/item/${postsIds[i]}.json`
             )
             .then(({ data }) => data)
             .catch((err) => reject(err))
@@ -106,46 +109,25 @@ export const actions = {
       }
       Promise.all(posts).then((_val) => {
         const val = _val.filter(Boolean)
-        if (stories) return resolve(state[stories].push(...val))
-        return resolve(val)
+        for (let i = 0; i < val.length; i++) {
+          state[stories][i + from] = val[i]
+        }
+        resolve(val)
       })
     })
   },
-  // prettier-ignore
-  // eslint-disable-next-line
-  async nuxtServerInit({ state, dispatch }, { params, error, route, redirect }) {
+  nuxtServerInit(_, { params, error, route, redirect }) {
     if (route.path[1] === 's') {
-      // stands for starred route
+      // stands for "starred" route
       if (route.path[3] === 's') return
-      state.currPage = isNaN(params.page) ? 1 : Number.parseInt(params.page)
-
       const whitelist = [undefined, 'new', 'top', 'best']
       const idxStories = whitelist.indexOf(params.stories)
       if (idxStories === -1) return error(404)
-
-      let stories = 'new'
-      if (idxStories === 2) stories = 'top'
-      if (idxStories === 3) stories = 'best'
-
-      await dispatch('fetchPostsIds', { stories })
-
-      const storiesIds = `${stories}StoriesIds`
-      const from = (state.currPage - 1) * 10
-      const to = state.currPage * 10
-      const posts = await dispatch('fetchPosts', {
-        from,
-        to,
-        postsIds: storiesIds,
-      })
-      state[`${stories}Stories`] = posts
     } else if (route.path[1] === 'u') {
       if (!params.id) return error('404 need to specify user id')
-      await dispatch('fetchUser', params.id)
     } else if (route.path[1] === 'i') {
-      if (!params.id) return error(404)
-      await dispatch('fetchItem', [params.id, true])
-    }
-    else redirect('/s')
+      if (!params.id) return error('404 need to specify item id')
+    } else redirect('/s')
   },
 }
 
