@@ -36,7 +36,7 @@
 </template>
 
 <script>
-import { mapActions } from 'vuex'
+import { mapActions, mapState } from 'vuex'
 import gsap from 'gsap'
 
 export default {
@@ -61,12 +61,15 @@ export default {
       stories: `${stories}Stories`,
     })
 
-    return { stories, currPage, posts, darkMode: store.getters.darkMode }
+    return { stories, currPage, posts }
   },
   data: () => ({
     pStart: { x: 0, y: 0 },
     pStop: { x: 0, y: 0 },
   }),
+  computed: {
+    ...mapState(['darkMode']),
+  },
   mounted() {
     this.$refs.posts.addEventListener('touchstart', this.swipeStart, false)
     this.$refs.posts.addEventListener('touchmove', this.swipeMove)
@@ -81,7 +84,7 @@ export default {
     ...mapActions(['toggleDarkMode']),
     refresh() {
       gsap.to(this.$refs.loaderArrow, {
-        rotateZ: 1440,
+        rotateZ: 1080,
         repeat: -1,
         duration: 0.9,
         ease: 'none',
