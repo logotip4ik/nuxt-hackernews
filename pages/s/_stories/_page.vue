@@ -1,23 +1,11 @@
 <template>
   <div ref="posts" :class="{ main: true, 'main--dark': darkMode }">
     <div ref="loader" :class="{ loader: true, 'loader--dark': darkMode }">
-      <svg
+      <img
         ref="loaderArrow"
-        xmlns="http://www.w3.org/2000/svg"
-        width="16"
-        height="16"
-        fill="currentColor"
-        class="bi bi-arrow-clockwise"
-        viewBox="0 0 16 16"
-      >
-        <path
-          fill-rule="evenodd"
-          d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z"
-        />
-        <path
-          d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z"
-        />
-      </svg>
+        src="~/assets/circle-arrow.svg"
+        alt="circle arrow icon"
+      />
     </div>
     <div class="container">
       <Item v-for="post in posts" :key="post.id" :post="post">
@@ -40,6 +28,16 @@ import { mapActions, mapState } from 'vuex'
 import gsap from 'gsap'
 
 export default {
+  transition: {
+    css: false,
+    mode: 'out-in',
+    enter(el, onComplete) {
+      gsap.fromTo(el, { delay: 0.1, opacity: 0 }, { opacity: 1, onComplete })
+    },
+    leave(el, onComplete) {
+      gsap.to(el, { opacity: 0, onComplete })
+    },
+  },
   async asyncData({ params, error, store }) {
     const currPage = isNaN(params.page) ? 1 : Number.parseInt(params.page)
     const whitelist = [undefined, 'new', 'top', 'best']
@@ -82,6 +80,9 @@ export default {
   },
   methods: {
     ...mapActions(['toggleDarkMode']),
+    enter(el, onComplete) {
+      gsap.fromTo(el, { delay: 0.2, opacity: 0 }, { opacity: 1, onComplete })
+    },
     refresh() {
       gsap.to(this.$refs.loaderArrow, {
         rotateZ: 1080,
@@ -213,8 +214,12 @@ export default {
 
   &--dark {
     background-color: #1f2129;
+
+    img {
+      filter: invert(1);
+    }
   }
-  svg {
+  img {
     transform: scale(1.75);
   }
 }
