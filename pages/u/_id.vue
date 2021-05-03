@@ -34,7 +34,7 @@ export default {
   async asyncData({ store, params, error }) {
     if (!params.id) return error(404)
     const user = await store.dispatch('fetchUser', params.id)
-    if (!user) error(`User "${params.id}" not found!`)
+    if (!user) return error(`User "${params.id}" not found!`)
     return { user }
   },
   head() {

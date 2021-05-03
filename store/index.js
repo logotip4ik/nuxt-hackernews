@@ -73,7 +73,7 @@ export const actions = {
       axios
         .get(`https://hacker-news.firebaseio.com/v0/user/${id}.json`)
         .then(({ data }) => {
-          state.user = data
+          if (data) state.user = data
           resolve(data)
         })
         .catch((err) => reject(err))
@@ -109,6 +109,7 @@ export const actions = {
       }
       Promise.all(posts).then((_val) => {
         const val = _val.filter(Boolean)
+        if (!stories) return resolve(val)
         for (let i = 0; i < val.length; i++) {
           state[stories][i + from] = val[i]
         }
