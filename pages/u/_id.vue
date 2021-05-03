@@ -19,7 +19,7 @@
           :class="{ inverted: true, 'inverted--dark': darkMode }"
         >
           <td>About:</td>
-          <td class="right small" v-html="user.about"></td>
+          <td class="right" v-html="user.about"></td>
         </tr>
       </tbody>
     </table>
@@ -27,13 +27,15 @@
 </template>
 
 <script>
+import { mapState } from 'vuex'
 import * as timeago from 'timeago.js'
 
 export default {
   async asyncData({ store, params, error }) {
     if (!params.id) return error(404)
     const user = await store.dispatch('fetchUser', params.id)
-    return { user, darkMode: store.getters.darkMode }
+    if (!user) error(`User "${params.id}" not found!`)
+    return { user }
   },
   head() {
     return {
@@ -48,6 +50,7 @@ export default {
     }
   },
   computed: {
+    ...mapState(['darkMode']),
     daysToNow() {
       return timeago.format(this.user.created * 1000)
     },
@@ -78,12 +81,16 @@ export default {
     td {
       padding: 0.5rem 0;
       border-bottom: 1px solid #999;
+      word-wrap: break-word;
+      overflow: hidden;
     }
     .right {
       font-size: 1rem;
-    }
-    .small {
-      font-size: 0.8rem;
+
+      * {
+        word-wrap: break-word;
+        white-space: pre-wrap;
+      }
     }
     .inverted {
       position: relative;
