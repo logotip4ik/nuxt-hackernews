@@ -16,7 +16,7 @@
     "core-js": "^3.9.1",
     "dexie": "^3.0.3",
     "gsap": "^3.6.1",
-    "nuxt": "^2.15.3",
+    "nuxt": "^3.4.3",
     "timeago.js": "^4.0.2"
   },
   "devDependencies": {
